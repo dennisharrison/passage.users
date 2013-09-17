@@ -5,3 +5,4 @@ app.js
 routes/*.js
 *.src.coffee
 public/stylesheets/style.css
+config.js

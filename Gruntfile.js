@@ -115,7 +115,7 @@ module.exports = function (grunt) {
           }
           done(reloaded);
         });
-    }, 500);
+    }, 750);
   });
 
   grunt.loadNpmTasks('grunt-develop');
