@@ -1,0 +1,8 @@
+//DB Server credentials
+exports.config = {}
+exports.config.database = {
+	username: "admin",
+	password: "admin",
+	hostname: "localhost:5984",
+	protocol_prefix: "http://"
+}
