@@ -13,6 +13,7 @@ LocalStrategy = require('passport-local').Strategy
 util = require('util')
 clc = require('cli-color')
 exphbs  = require('express3-handlebars')
+md5 = require('MD5')
 
 # Pull in config
 if fs.existsSync('config.js') is true
@@ -109,6 +110,7 @@ passport.serializeUser((user, done) ->
 
 passport.deserializeUser((id, done) ->
 	users.get(id, (err, user) ->
+		user.gravatar_hash = md5(user.email.toLowerCase())
 		done(err, user)
 		)
 )

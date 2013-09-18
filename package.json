@@ -12,7 +12,8 @@
     "express3-handlebars": "*",
     "nano": "*",
     "cli-color": "*",
-    "connect-flash": "*"
+    "connect-flash": "*",
+    "MD5": "*"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
