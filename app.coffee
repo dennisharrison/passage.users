@@ -3,55 +3,31 @@
 #  * Module dependencies.
 #  */
 
-express = require('express')
-routes = require('./routes')
-http = require('http')
-path = require('path')
-fs = require('fs')
-passport = require('passport')
+express 	= require('express')
+routes 		= require('./routes')
+http 			= require('http')
+path 			= require('path')
+fs 				= require('fs')
+passport 	= require('passport')
 LocalStrategy = require('passport-local').Strategy
-util = require('util')
-clc = require('cli-color')
-exphbs  = require('express3-handlebars')
-md5 = require('MD5')
-
-# Pull in config
-if fs.existsSync('config.js') is true
-	database = require('./config').config.database
-else
-	# DB Server credentials
-	database = {}
-	database.username = ""
-	database.password = ""
-	database.hostname = "localhost:5984"
-	database.protocol_prefix = "http://"
-
-if database.username isnt "" and database.password isnt ""
-	database.DBUrl = "#{database.protocol_prefix}#{database.username}:#{database.password}@#{database.hostname}"
-else
-	database.DBUrl = "#{database.protocol_prefix}#{database.hostname}"
+exphbs  	= require('express3-handlebars')
+md5 			= require('MD5')
+DB 				= require(__dirname + '/lib/users')
+putils 		= require(__dirname + '/lib/passage-utils')
+inspect 	= putils.inspect
+log 			= putils.log
 	
-hostname = database.hostname
+hostname = DB.config.hostname
+_couch = DB.connector
+Collections = DB.Collections
 
-global.nano = require('nano')(database.DBUrl)
-
-
-# Setup logging functions
-inspect = (message) ->
-	util.log(util.inspect(message, {colors:true}))
-
-notice = clc.cyanBright.bold
-error = clc.red.bold
-warn = clc.yellow
-log = (message, level = notice) ->
-	util.log(level(message))
 
 bootstrapUsers = (db_name, callback) ->
 	# Check for existence of passage_users DB and create it if needed.
-	global.nano.db.get(db_name, (err, body) ->
+	_couch.db.get(db_name, (err, body) ->
 			if err?.error is 'not_found'
 				log("Missing #{db_name} @ #{hostname}", warn)
-				global.nano.db.create(db_name, (err, body) ->
+				_couch.db.create(db_name, (err, body) ->
 					if err
 						inspect(err)
 					else
@@ -65,10 +41,9 @@ bootstrapUsers = (db_name, callback) ->
 		)
 
 # Authenticate!
-users = global.nano.use('passage_users')
+Users = _couch.use('passage_users')
 passport.use(new LocalStrategy((username, password, done) ->
-	users.get(username, (err, user) ->
-		inspect(user)
+	Users.get(username, (err, user) ->
 		if err
 			return done(null, false, {message: "Invalid user: #{username}"})
 		if user.password isnt password
@@ -85,11 +60,11 @@ admin_user =
 bootstrapUsers('passage_users',(body) ->
 	#Add admin user
 	db_name = body.db_name
-	users.get('admin', (err, body) ->
+	Users.get('admin', (err, body) ->
 		if err
 			if err.error is 'not_found'
 				log("'admin' user missing", warn)
-				users.insert(admin_user, 'admin', (err, body) ->
+				Users.insert(admin_user, 'admin', (err, body) ->
 					if err
 						log(err, error)
 					else
@@ -109,7 +84,7 @@ passport.serializeUser((user, done) ->
 )
 
 passport.deserializeUser((id, done) ->
-	users.get(id, (err, user) ->
+	Users.get(id, (err, user) ->
 		user.gravatar_hash = md5(user.email.toLowerCase())
 		done(err, user)
 		)
