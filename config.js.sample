@@ -1,8 +1,22 @@
-//DB Server credentials
-exports.config = {}
-exports.config.database = {
-	username: "admin",
-	password: "admin",
-	hostname: "localhost:5984",
-	protocol_prefix: "http://"
-}
+//Main config object
+exports.config = {};
+exports.config.hasConfig = true;
+
+//DB Server credentials.
+database = {};
+database.username = "admin";
+database.password = "password";
+database.hostname = "localhost:5984";
+database.protocol_prefix = "http://";
+exports.config.database = database;
+
+// You should configure this with a unique key for salting passport sessions.
+exports.config.session_salt = "SECURE_ME";
+
+// This is your default admin user, it's pretty awesome.  We suggest using the email as the 'name'.
+admin_user = {};
+admin_user.name = "admin@example.com";
+admin_user.email = "admin@example.com";
+admin_user.password = "password";
+admin_user.roles = ['admin'];
+exports.config.admin_user = admin_user;
