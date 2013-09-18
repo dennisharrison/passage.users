@@ -13,7 +13,8 @@
     "nano": "*",
     "cli-color": "*",
     "connect-flash": "*",
-    "MD5": "*"
+    "MD5": "*",
+    "socket.io": "*"
   },
   "devDependencies": {
     "grunt": "~0.4.1",

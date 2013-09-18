@@ -1,0 +1,45 @@
+{{users.total_rows}}
+
+{{#each users.rows}}
+  {{#with value}}
+	 {{> users/show}}
+  {{/with}}
+{{/each}}
+
+<script type='text/javascript'>
+var rows;
+	var socket = io.connect('http://localhost:3000/users');
+  socket.on('users_change', function (change) {
+  	var user = change.doc
+  	console.log(user)
+  	var user_ui = $("[_id='" + user._id + "']");
+    if(user_ui.length >= 1){
+      var rev = user_ui.find('.rev');  
+      if(rev != user._rev){
+        var template = Handlebars.partials['users/show'](user)
+        user_ui.replaceWith(template);
+      }
+    } else {
+      $.ajax({
+        url: '/users.order',
+        dataType: 'json',
+        type: 'get',
+        success: function(data){
+          rows = data;
+          var i = 0
+          _.each(data.rows, function(row){
+            if(row.id == user._id){
+              console.log("Found my row: " + i);
+              var previous_element = $("[_id='" + data.rows[i-1].id + "']");
+              console.log(previous_element);
+              var template = Handlebars.partials['users/show'](user)
+              previous_element.after(template);
+            }
+            i ++  
+          })
+        }
+      });
+    }
+  });
+
+</script>

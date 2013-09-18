@@ -16,76 +16,104 @@ DB 				= require(__dirname + '/lib/users')
 putils 		= require(__dirname + '/lib/passage-utils')
 inspect 	= putils.inspect
 log 			= putils.log
+config 		= {}
 	
 hostname = DB.config.hostname
 _couch = DB.connector
 Collections = DB.Collections
 
+configPath = path.resolve('./config.js')
+if fs.existsSync('./config.js') is true
+	configPath = configPath.replace('.js','')
+	config = require(configPath).config
+	
 
-bootstrapUsers = (db_name, callback) ->
+if not config.hasConfig
+	throw "Please move config.js.sample to config.js and edit it for correctness."
+
+Users = _couch.use('_users')
+session_salt = config.session_salt
+
+bootstrapAdmin = () ->
 	# Check for existence of passage_users DB and create it if needed.
-	_couch.db.get(db_name, (err, body) ->
-			if err?.error is 'not_found'
-				log("Missing #{db_name} @ #{hostname}", warn)
-				_couch.db.create(db_name, (err, body) ->
-					if err
-						inspect(err)
-					else
-						log("Created #{db_name} @ #{hostname}")
-						bootstrapUsers(db_name, callback)
-					)
-			else
-				log("Found #{db_name} @ #{hostname} - Now running callback...")
-				if typeof callback is 'function'
-					callback(body)
+	admin_id = "org.couchdb.user:#{config.admin_user.name}"
+	Users.get(admin_id, (err, body) ->
+		if err?.error is 'not_found'
+			log("Missing #{config.admin_user.name} @ #{hostname}/_users")
+			upsertUser(config.admin_user)
+		else
+			log("Found #{config.admin_user.name} @ #{hostname}/_users - Good to go!")
+	)
+
+couchifyUserName = (userName) ->
+	_id = "org.couchdb.user:#{userName}"
+	if userName isnt _id
+		userName = _id
+	return userName
+
+upsertUser = (userDoc) ->
+	userDoc._id = couchifyUserName(userDoc.name)
+	userDoc.modified_epoch = Date.now()
+	userDoc.type = "user"
+	Users.insert(userDoc, userDoc._id, (err, body) ->
+		if err
+			inspect(err)
+			return
+		log("Upserted #{userDoc.name} @ #{hostname}/_users")
 		)
 
-# Authenticate!
-Users = _couch.use('passage_users')
-passport.use(new LocalStrategy((username, password, done) ->
-	Users.get(username, (err, user) ->
+destroyUser = (userName) ->
+	userName = couchifyUserName(userName)
+	Users.get(userName, (err, body) ->
 		if err
+			inspect(err)
+			return
+		if body
+			Users.destroy(userName, body._rev, (err, body) ->
+				if err
+					inspect(err)
+					return
+				if body
+					log("Destroyed #{userName} @ #{hostname}/_users")
+			)
+	)
+
+changeUserPassword = (userName, password) ->
+	userName = couchifyUserName(userName)
+	Users.get(userName, (err, body) ->
+		if err
+			inspect(err)
+			return
+		if body
+			body.password = password
+			log("Changing password for #{userName} @ #{hostname}/_users")
+			upsertUser(body)
+	)
+
+# Authenticate!
+passport.use(new LocalStrategy((username, password, done) ->
+	username = "#{username}"
+	_couch.auth(username, password, (err, user) ->
+		if err
+			inspect(err)
 			return done(null, false, {message: "Invalid user: #{username}"})
-		if user.password isnt password
-			return done(null, false, {message: 'Invalid password'})
-		return done(null, user)
+		if user
+			inspect(user)
+			return done(null, user)
 		)
 	))
 
-# Configure your admin user
-admin_user =
-	email_address: "devteam@aeonstructure.com"
-	password: "password"
-
-bootstrapUsers('passage_users',(body) ->
-	#Add admin user
-	db_name = body.db_name
-	Users.get('admin', (err, body) ->
-		if err
-			if err.error is 'not_found'
-				log("'admin' user missing", warn)
-				Users.insert(admin_user, 'admin', (err, body) ->
-					if err
-						log(err, error)
-					else
-						log("'admin' user with password '#{admin_user.password}' created in #{db_name} @ #{hostname}")
-					)
-			else
-				inspect(err)
-		else
-			log("'admin' user found in #{db_name} @ #{hostname}")
-		)
-	#console.log body
-	)
-
+bootstrapAdmin()
+#changeUserPassword(config.admin_user.name, "support2366apex")
 
 passport.serializeUser((user, done) ->
-	done(null, user._id)
+	done(null, user.name)
 )
 
-passport.deserializeUser((id, done) ->
+passport.deserializeUser((name, done) ->
+	id = "org.couchdb.user:#{name}"
 	Users.get(id, (err, user) ->
-		user.gravatar_hash = md5(user.email.toLowerCase())
+		user.gravatar_hash = md5(user.name.toLowerCase())
 		done(err, user)
 		)
 )
@@ -117,11 +145,29 @@ app.configure(()->
 
 	app.use(express.cookieParser())
 
-	app.use(express.session({ cookie: { maxAge: 60000 },secret: 'keyboard cat'}))
+	app.use(express.session({ cookie: { maxAge: 2628000000 },secret: session_salt}))
 	app.use(passport.initialize())
 	app.use(passport.session())
 	app.use(app.router)
 	app.use(express.static(path.join(__dirname, 'public')))
+	)
+
+exposePartials = (req, res, next) ->
+	hbs.loadPartials({cache: app.enabled('view cache'), precompiled: true}, (err, partials) ->
+		if err
+			return next(err)
+		extRegex = new RegExp("#{hbs.extname}$")
+		partials_array = []
+		for name of partials
+			partial_obj = {}
+			partial_obj.name = name.replace(extRegex, '')
+			partial_obj.partial = partials[name]
+			partials_array.push(partial_obj)
+
+		if partials_array.length
+			res.locals.partials = partials_array
+
+		next()
 	)
 
 # // development only
@@ -137,7 +183,6 @@ app.get('/logout', (req, res) ->
   res.redirect('/')
 )
 
-
 #app.post('/login', routes.login.post)
 app.post('/login', passport.authenticate('local', { 
 	failureRedirect: '/login'
@@ -145,7 +190,24 @@ app.post('/login', passport.authenticate('local', {
 	})
 )
 
+app.get('/users', exposePartials, routes.users.index)
+app.get('/users.order', routes.users.order)
+
 module.exports = app
-http.createServer(app).listen(app.get('port'), () ->
-  console.log('Express server listening via Grunt on port ' + app.get('port'))
-)
+
+io = require('socket.io').listen(app.listen(app.get('port')))
+io.sockets.on('connection', (socket) ->
+	io.sockets.emit('this', {will: 'be received by everyone'})
+	)
+
+users_socket = io.of('/users')
+users_feed = Users.follow({since: "now", include_docs:true})
+users_feed.on('change', (change) ->
+	log("CHANGE HAPPENED!")
+	log(change)
+	users_socket.emit('users_change', change)
+	)
+users_feed.follow()
+# http.createServer(app).listen(app.get('port'), () ->
+#   console.log('Express server listening via Grunt on port ' + app.get('port'))
+# )
