@@ -92,11 +92,22 @@ passport.deserializeUser((id, done) ->
 
 app = express()
 
+version = JSON.parse(fs.readFileSync(__dirname + "/package.json")).version
+hbsOptions =
+	helpers:
+		appVersion: () -> 
+			return "v#{version}"
+	defaultLayout: 'main'
+	partialsDir: path.join(__dirname,"views/partials/")
+	extname: ".html"
+
+hbs = exphbs.create(hbsOptions)
+
 # // all environments
 
 app.configure(()->
 	app.set('port', process.env.PORT || 3000)
-	app.engine('html', exphbs({defaultLayout: 'main',partialsDir: path.join(__dirname,"views/partials/"),extname: ".html"}))
+	app.engine('html', hbs.engine)
 	app.set('view engine', 'html')
 	app.set('views', __dirname + '/views')
 	app.use(express.favicon())
