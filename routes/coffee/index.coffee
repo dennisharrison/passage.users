@@ -1,2 +1,2 @@
 exports.index = (req, res) ->
-	res.render('index', {title: "No title for you!"})
+	res.render('index', {title: "No title for you!", user: req.user})

@@ -73,7 +73,7 @@ module.exports = function (grunt) {
         },
       },
       handlebars: {
-        files: ['views/{,*/}*.handlebars'],
+        files: ['views/{,*/}*.html'],
         options: {
           livereload: reloadPort
         },

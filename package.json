@@ -11,7 +11,8 @@
     "passport-local": "*",
     "express3-handlebars": "*",
     "nano": "*",
-    "cli-color": "*"
+    "cli-color": "*",
+    "connect-flash": "*"
   },
   "devDependencies": {
     "grunt": "~0.4.1",

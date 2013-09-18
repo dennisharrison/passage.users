@@ -3,15 +3,13 @@
 #  * Module dependencies.
 #  */
 
-
-
 express = require('express')
 routes = require('./routes')
 http = require('http')
 path = require('path')
 fs = require('fs')
-global.passport = require('passport')
-global.LocalStrategy = require('passport-local').Strategy
+passport = require('passport')
+LocalStrategy = require('passport-local').Strategy
 util = require('util')
 clc = require('cli-color')
 exphbs  = require('express3-handlebars')
@@ -19,7 +17,6 @@ exphbs  = require('express3-handlebars')
 # Pull in config
 if fs.existsSync('config.js') is true
 	database = require('./config').config.database
-	console.log database
 else
 	# DB Server credentials
 	database = {}
@@ -68,12 +65,11 @@ bootstrapUsers = (db_name, callback) ->
 
 # Authenticate!
 users = global.nano.use('passage_users')
-global.passport.use(new global.LocalStrategy((username, password, done) ->
+passport.use(new LocalStrategy((username, password, done) ->
 	users.get(username, (err, user) ->
-		if err
-			inspect(err)
-			return done(null, false, {message: 'Invalid user'})
 		inspect(user)
+		if err
+			return done(null, false, {message: "Invalid user: #{username}"})
 		if user.password isnt password
 			return done(null, false, {message: 'Invalid password'})
 		return done(null, user)
@@ -107,42 +103,59 @@ bootstrapUsers('passage_users',(body) ->
 	)
 
 
-global.passport.serializeUser((user, done) ->
+passport.serializeUser((user, done) ->
 	done(null, user._id)
 )
 
-global.passport.deserializeUser((id, done) ->
-  findById(id, (err, user) ->
-    done(err, user)
-  )
+passport.deserializeUser((id, done) ->
+	users.get(id, (err, user) ->
+		done(err, user)
+		)
 )
 
 app = express()
 
 # // all environments
-app.set('port', process.env.PORT || 3000)
-app.engine('handlebars', exphbs({defaultLayout: 'main'}))
-app.set('view engine', 'handlebars')
-app.set('views', __dirname + '/views')
-app.use(express.favicon())
-app.use(express.logger('dev'))
-app.use(express.bodyParser())
-app.use(express.methodOverride())
-app.use(global.passport.initialize())
-app.use(global.passport.session())
-app.use(app.router)
-app.use(express.static(path.join(__dirname, 'public')))
+
+app.configure(()->
+	app.set('port', process.env.PORT || 3000)
+	app.engine('html', exphbs({defaultLayout: 'main',partialsDir: path.join(__dirname,"views/partials/"),extname: ".html"}))
+	app.set('view engine', 'html')
+	app.set('views', __dirname + '/views')
+	app.use(express.favicon())
+	app.use(express.logger('dev'))
+	app.use(express.bodyParser())
+	app.use(express.methodOverride())
+
+	app.use(express.cookieParser())
+
+	app.use(express.session({ cookie: { maxAge: 60000 },secret: 'keyboard cat'}))
+	app.use(passport.initialize())
+	app.use(passport.session())
+	app.use(app.router)
+	app.use(express.static(path.join(__dirname, 'public')))
+	)
 
 # // development only
 if 'development' is app.get('env')
   app.use(express.errorHandler())
 
 app.get('/', routes.index)
-app.get('/login', routes.login.get)
+app.get('/login', (req, res) ->
+	res.render('login', { user: req.user, message: req.session.messages }))
+
+app.get('/logout', (req, res) ->
+  req.logout()
+  res.redirect('/')
+)
+
+
 #app.post('/login', routes.login.post)
-app.post('/login', passport.authenticate('local', { failureRedirect: '/login'}), (req, res) ->
-	res.redirect('/')
-	)
+app.post('/login', passport.authenticate('local', { 
+	failureRedirect: '/login'
+	successRedirect: '/'
+	})
+)
 
 module.exports = app
 http.createServer(app).listen(app.get('port'), () ->
