@@ -1,14 +1,26 @@
-{{users.total_rows}}
 
-{{#each users.rows}}
-  {{#with value}}
-	 {{> users/show}}
-  {{/with}}
-{{/each}}
+<div class='col-md-6 col-md-offset-3 well'>
+  <h1>{{users.total_rows}} Users Available</h1>
+  <ul class='list-group'>
+    <li class="list-group-item row">
+      <span>Add a new User</span>
+      <div class='pull-right'>
+      <a href='#' class='pointer btn btn-mini btn-success control-button'>
+        <i class='glyphicon glyphicon-plus'></i>
+      </a>
+      </div>
+    </li>
+  {{#each users.rows}}
+    {{#with value}}
+  	 {{> users/show}}
+    {{/with}}
+  {{/each}}
+  </ul>
+</div>
 
 <script type='text/javascript'>
 var rows;
-	var socket = io.connect('http://localhost:3000/users');
+	var socket = io.connect('http://cassiopeia.local:3000/users');
   socket.on('users_change', function (change) {
   	var user = change.doc
   	console.log(user)
@@ -16,6 +28,8 @@ var rows;
     if(user_ui.length >= 1){
       var rev = user_ui.find('.rev');  
       if(rev != user._rev){
+        var rev = user._rev.split('-')[0];
+        user.rev = rev;
         var template = Handlebars.partials['users/show'](user)
         user_ui.replaceWith(template);
       }

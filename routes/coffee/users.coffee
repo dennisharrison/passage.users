@@ -29,7 +29,7 @@ users.index = (req, res) ->
 			inspect(err)
 			return
 		if body
-			inspect(body)
+			# inspect(body)
 			res.render('user_index', { 'users': body })
 		)
 	

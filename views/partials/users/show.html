@@ -1,4 +1,12 @@
-<div id="{{_rev}}" _id="{{_id}}" class="user_listing">
-		<span class="name">{{name}}</span>
-		<span class="rev">{{_rev}}</span>
-	</div>
+<li id="{{_rev}}" _id="{{_id}}" class="user_listing list-group-item row">
+	<div class="name col-md-6"><span class="badge badge-info">{{rev}}</span> {{name}}</div>
+	<div class="rev">{{email}}</div>
+	<div class='pull-right'>
+	<a title='{{title}}' data-record="{{data._id}}" href='{{!pathFor link data}}' class='pointer btn btn-mini btn-info control-button {{css}}'>
+		<i class='glyphicon glyphicon-pencil'></i>
+	</a>
+	<a title='{{title}}' data-record="{{data._id}}" href='{{!pathFor link data}}' class='pointer btn btn-mini btn-danger control-button {{css}}'>
+		<i class='glyphicon glyphicon-remove'></i>
+	</a>
+</div>
+</li>

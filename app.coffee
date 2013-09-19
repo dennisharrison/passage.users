@@ -195,16 +195,14 @@ app.get('/users.order', routes.users.order)
 
 module.exports = app
 
-io = require('socket.io').listen(app.listen(app.get('port')))
+io = require('socket.io').listen(app.listen(app.get('port')),{ log: false })
 io.sockets.on('connection', (socket) ->
 	io.sockets.emit('this', {will: 'be received by everyone'})
 	)
 
 users_socket = io.of('/users')
-users_feed = Users.follow({since: "now", include_docs:true})
+users_feed = Users.follow({since: "now", include_docs: true})
 users_feed.on('change', (change) ->
-	log("CHANGE HAPPENED!")
-	log(change)
 	users_socket.emit('users_change', change)
 	)
 users_feed.follow()
