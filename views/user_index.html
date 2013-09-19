@@ -20,7 +20,7 @@
 
 <script type='text/javascript'>
 var rows;
-	var socket = io.connect('http://cassiopeia.local:3000/users');
+	var socket = io.connect('http://localhost:3000/users');
   socket.on('users_change', function (change) {
   	var user = change.doc
   	console.log(user)
