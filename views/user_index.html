@@ -1,5 +1,5 @@
 
-<div class='col-md-6 col-md-offset-3 well'>
+<div class='col-md-4 col-md-offset-4 well'>
   <h1>{{users.total_rows}} Users Available</h1>
   <ul class='list-group'>
     <li class="list-group-item row">
@@ -18,42 +18,6 @@
   </ul>
 </div>
 
-<script type='text/javascript'>
-var rows;
-	var socket = io.connect('http://localhost:3000/users');
-  socket.on('users_change', function (change) {
-  	var user = change.doc
-  	console.log(user)
-  	var user_ui = $("[_id='" + user._id + "']");
-    if(user_ui.length >= 1){
-      var rev = user_ui.find('.rev');  
-      if(rev != user._rev){
-        var rev = user._rev.split('-')[0];
-        user.rev = rev;
-        var template = Handlebars.partials['users/show'](user)
-        user_ui.replaceWith(template);
-      }
-    } else {
-      $.ajax({
-        url: '/users.order',
-        dataType: 'json',
-        type: 'get',
-        success: function(data){
-          rows = data;
-          var i = 0
-          _.each(data.rows, function(row){
-            if(row.id == user._id){
-              console.log("Found my row: " + i);
-              var previous_element = $("[_id='" + data.rows[i-1].id + "']");
-              console.log(previous_element);
-              var template = Handlebars.partials['users/show'](user)
-              previous_element.after(template);
-            }
-            i ++  
-          })
-        }
-      });
-    }
-  });
-
+<script type='text/javascript'>  
+  reactivity('users', 'users/show');
 </script>
