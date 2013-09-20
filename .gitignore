@@ -6,3 +6,4 @@ routes/*.js
 *.src.coffee
 public/stylesheets/style.css
 config.js
+public/javascripts/public.js
