@@ -133,6 +133,20 @@ hbs = exphbs.create(hbsOptions)
 
 # // all environments
 
+logErrors = (err, req, res, next) ->
+	inspect(err.stack)
+	next(err)
+
+clientErrorHandler = (err, req, res, next) ->
+	if req.xhr?
+		res.send(500, { error: 'Something blew up!' })
+	else
+		next(err)
+
+errorHandler = (err, req, res, next) ->
+	res.status(500)
+	res.render('error', { error: err })
+
 app.configure(()->
 	app.set('port', process.env.PORT || 3000)
 	app.engine('html', hbs.engine)
@@ -150,6 +164,9 @@ app.configure(()->
 	app.use(passport.session())
 	app.use(app.router)
 	app.use(express.static(path.join(__dirname, 'public')))
+	app.use(logErrors)
+	app.use(clientErrorHandler)
+	app.use(errorHandler)
 	)
 
 exposePartials = (req, res, next) ->
