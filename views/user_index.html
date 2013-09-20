@@ -5,9 +5,9 @@
     <li class="list-group-item row">
       <span>Add a new User</span>
       <div class='pull-right'>
-      <a href='#' class='pointer btn btn-mini btn-success control-button'>
+      <button id='newUserButton' class='pointer btn btn-mini btn-success control-button'>
         <i class='glyphicon glyphicon-plus'></i>
-      </a>
+      </button>
       </div>
     </li>
   {{#each users.rows}}
@@ -19,5 +19,14 @@
 </div>
 
 <script type='text/javascript'>  
-  reactivity('users', 'users/show');
+  var user_socket = reactivity(users_passage);
+
+  $(document).ready(function(){
+    //$("body").append(returnElements(user_form_description));
+  })
+
+  $("#newUserButton").on('click', function(e){
+    passageModalOpen(returnElements(users_passage));
+  });
+
 </script>

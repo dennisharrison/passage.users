@@ -1,12 +1,13 @@
 // Reactivity is achieved by listening to the collections
 // changes stream.  On a change for this collection update
 // either the item or add the item to the UI.
-var reactivity = function(collection, partial){
+var reactivity = function(passage){
   // Make sure the collection name is all lowercase.
-  var collection = collection.toLowerCase(),
+  var collection = passage.name.toLowerCase(),
       rows,
       doc,
       template,
+      show,
       ui,
       rev,
       _id,
@@ -18,6 +19,7 @@ var reactivity = function(collection, partial){
   socket_uri = "/" + collection;
   socket_event = "" + collection + "_change";
   list_index_uri = "" + socket_uri + ".order";
+  show = passage.show
 
   socket = io.connect(socket_uri);
 
@@ -29,7 +31,7 @@ var reactivity = function(collection, partial){
       if(rev != _doc._rev){
         var rev = _doc._rev.split('-')[0];
         _doc.rev = rev;
-        var template = Handlebars.partials[partial](_doc)
+        var template = Handlebars.partials[show](_doc)
         _doc_ui.replaceWith(template);
       }
     } else {
@@ -43,7 +45,7 @@ var reactivity = function(collection, partial){
           _.each(data.rows, function(row){
             if(row.id == _doc._id){
               var previous_element = $("[_id='" + data.rows[i-1].id + "']");
-              var template = Handlebars.partials[partial](_doc)
+              var template = Handlebars.partials[show](_doc)
               previous_element.after(template);
             }
             i ++  
@@ -54,4 +56,5 @@ var reactivity = function(collection, partial){
   };
 
   socket.on(socket_event, change_callback);
+  return socket
 }

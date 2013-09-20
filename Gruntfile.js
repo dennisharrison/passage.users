@@ -16,6 +16,11 @@ module.exports = function (grunt) {
     },
     less: {
       compile: {
+        options: {
+          paths: ['less/bootstrap'],
+          strictImports: true,
+          yuicompress: true
+        },
         files: {
           'public/stylesheets/style.css': 'less/style.less'
         }
@@ -38,8 +43,21 @@ module.exports = function (grunt) {
           'routes/index.js': 'routes/coffee/*.coffee'
         }
       },
-      compileClient: {
-
+      compileHandlebarsHelpers: {
+        options: {
+          sourceMap: true
+        },
+        files: {
+          'public/javascripts/handlebars_helpers.js': 'handlebars_helpers/*.coffee'  
+        }
+      },
+      compilePublic: {
+        options: {
+          sourceMap: true
+        },
+        files: {
+          'public/javascripts/public.js': 'public/coffeescripts/*.coffee'  
+        }
       }
     },
     watch: {
@@ -52,9 +70,11 @@ module.exports = function (grunt) {
           'app.js',
           'routes/*.js',
           'app.coffee',
-          'routes/coffee/*.coffee'
+          'routes/coffee/*.coffee',
+          'handlebars_helpers/*.coffee',
+          'public/coffeescripts/*.coffee'
         ],
-        tasks: ['coffee:compileRoutes', 'coffee:compileServer', 'develop', 'delayed-livereload']
+        tasks: ['coffee:compilePublic', 'coffee:compileHandlebarsHelpers', 'coffee:compileRoutes', 'coffee:compileServer', 'develop', 'delayed-livereload']
       },
       js: {
         files: ['public/js/*.js'],
@@ -121,5 +141,12 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-develop');
   grunt.loadNpmTasks('grunt-contrib-watch');
 
-  grunt.registerTask('default', ['coffee:compileRoutes', 'coffee:compileServer', 'less:compile', 'develop', 'watch']);
+  grunt.registerTask('default', [
+    'coffee:compilePublic',
+    'coffee:compileHandlebarsHelpers',
+    'coffee:compileRoutes',
+    'coffee:compileServer',
+    'less:compile',
+    'develop',
+    'watch']);
 };

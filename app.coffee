@@ -201,11 +201,17 @@ io.sockets.on('connection', (socket) ->
 	)
 
 users_socket = io.of('/users')
+users_socket.on('connection', (socket) ->
+	socket.on('upsert', (doc) ->
+		console.log(doc)
+		)
+	)
 users_feed = Users.follow({since: "now", include_docs: true})
 users_feed.on('change', (change) ->
 	users_socket.emit('users_change', change)
 	)
 users_feed.follow()
+
 # http.createServer(app).listen(app.get('port'), () ->
 #   console.log('Express server listening via Grunt on port ' + app.get('port'))
 # )
