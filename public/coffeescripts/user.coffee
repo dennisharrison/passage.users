@@ -7,8 +7,8 @@ passage.show = 'users/show'
 passage.elementGroups = {}
 egs = passage.elementGroups
 egs.Info =
-	full_name: {type:'input_text', label:false, placeholder:'What is YOUR NAME?!', validation:['required', 'custom_validator', 'alpha_only']}
-	email: {type:'input_text', label:'L-Mail', validation:['required', 'email_validator']}
+	full_name: {type:'input_text', label:'Your Full Name Goes Here', placeholder:'Johnny Appleseed', validation:['required', 'custom_validator', 'alpha_only']}
+	email: {type:'input_text', label:'E-Mail', validation:['required', 'email_validator']}
 	password: {type:'input_password', placeholder:'secreatsz', validation:['required']}
 	password_confirmation: {type:'input_password', validation:['required']}
 	#roles: 'roles_editor'
