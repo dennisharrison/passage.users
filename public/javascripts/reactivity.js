@@ -37,7 +37,10 @@ var reactivity = function(passage){
       if(rev != _doc._rev){
         var rev = _doc._rev.split('-')[0];
         _doc.rev = rev;
-        var template = Handlebars.partials[show](_doc)
+        var options = {
+          doc: _doc
+        }
+        var template = returnListItemElements(passage, options);
         _doc_ui.replaceWith(template);
       }
     } else {
