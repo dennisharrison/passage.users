@@ -1,4 +1,4 @@
-@returnElements = (passage, options) ->
+@returnFormElements = (passage, options) ->
 	name = "#{passage.form_name}-new"
 	classes = passage.classes || ""
 	
@@ -47,6 +47,8 @@
 
 			if field is 'destroy' and typeof doc is 'undefined'
 				continue
+			if field is 'edit' and typeof doc is 'undefined'
+				continue
 			
 			if doc and typeof doc[field] isnt 'undefined'
 				context.value = doc[field]
@@ -55,4 +57,46 @@
 		rendered += "</div>"
 	rendered += "</form>"
 
+	return rendered
+
+@returnListItemElements = (passage, options) ->
+	if options?.doc
+		doc = options.doc
+	else
+		return
+
+	rendered = "<li id='#{doc._rev}' _id='#{doc._id}' class='#{passage.name}_listing list-group-item row' passage_listing_root='true'>"
+	rendered += Handlebars.partials["#{passage.show}"](doc)
+
+	for name of passage.elementGroups
+		if name is "Info"
+			continue
+		if name is "FormControls"
+			continue
+		group = passage.elementGroups[name]
+		rendered += "<div class='element_group #{name}'>"
+		for field of group
+			element = group[field]
+			context = {}
+			context.name = field
+
+			if element.action? and typeof element.action is 'string'
+				context.action = element.action
+				context.passage_name = passage.name
+			if not element.action? or (element.action? and element.action is true)
+				context.action = field
+				context.passage_name = passage.name
+			if element.action? and element.action is false
+				delete context.action
+			if element.classes? and typeof element.classes is 'string'
+				context.classes = element.classes
+			if element.glyphicon? and typeof element.glyphicon is 'string'
+				context.glyphicon = element.glyphicon
+
+			if doc and typeof doc[field] isnt 'undefined'
+				context.value = doc[field]
+			partial = Handlebars.partials["elements/#{element.type}"](context)
+			rendered += partial
+		rendered += "</div>"
+	rendered += "</li>"
 	return rendered

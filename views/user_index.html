@@ -1,7 +1,7 @@
 
 <div class='col-md-4 col-md-offset-4 well'>
   <h1>{{users.total_rows}} Users Available</h1>
-  <ul class='list-group'>
+  <ul id="UsersList" class='list-group'>
     <li class="list-group-item row">
       <span>Add a new User</span>
       <div class='pull-right'>
@@ -10,23 +10,20 @@
       </button>
       </div>
     </li>
-  {{#each users.rows}}
-    {{#with value}}
-  	 {{> users/show}}
-    {{/with}}
-  {{/each}}
+    
   </ul>
 </div>
 
 <script type='text/javascript'>  
-  var user_socket = reactivity(users_passage);
+  var users_socket = reactivity(users_passage);
+  initializeList(users_passage, $("#UsersList"));
 
   $(document).ready(function(){
     //$("body").append(returnElements(user_form_description));
-  })
+  });
 
   $("#newUserButton").on('click', function(e){
-    passageModalOpen(returnElements(users_passage));
+    passageModalOpen(returnFormElements(users_passage));
   });
 
 </script>

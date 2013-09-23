@@ -14,6 +14,9 @@ exphbs  	= require('express3-handlebars')
 md5 			= require('MD5')
 DB 				= require(__dirname + '/lib/users')
 putils 		= require(__dirname + '/lib/passage-utils')
+txn 			= require('txn').defaults({"create":true, "timestamps":true, "couch":"http://aeon:support2366apex@couch.digilord.net", "log_level":"debug"})
+users_txn = txn.defaults({"db":"_users", "delay":1000, "timeout":30000})
+
 inspect 	= putils.inspect
 log 			= putils.log
 config 		= {}
@@ -187,6 +190,27 @@ exposePartials = (req, res, next) ->
 		next()
 	)
 
+
+upsertDoc = (doc, to_txn) ->
+	doc.txn_epoch = Date.now()
+	console.log(doc)
+	to_txn()
+
+upsertUser = (doc) ->
+	console.log("upsertUser for #{doc._id}")
+	users_txn({"doc":doc}, upsertDoc, (error, newData) ->
+	  if !error
+	    return console.log("Processed " + newData._id)
+	  # These errors can be sent by Txn.
+	  if(error.timeout)
+	    return console.log("Gave up after MANY conflicts");
+	  if(error.conflict)
+	    return console.log("addAttachments never completed. Troubleshoot and try again");
+
+	  console.log(error);
+	  throw error; # Unknown error
+	  )
+
 # // development only
 if 'development' is app.get('env')
   app.use(express.errorHandler())
@@ -209,6 +233,7 @@ app.post('/login', passport.authenticate('local', {
 
 app.get('/users', exposePartials, routes.users.index)
 app.get('/users.order', routes.users.order)
+app.get('/users.json', routes.users.json)
 
 module.exports = app
 
@@ -220,7 +245,20 @@ io.sockets.on('connection', (socket) ->
 users_socket = io.of('/users')
 users_socket.on('connection', (socket) ->
 	socket.on('upsert', (doc) ->
-		console.log(doc)
+		doc._id = couchifyUserName(doc.email)
+		doc.name = doc.email
+		doc.type = 'user'
+		doc.roles = []
+		delete(doc.password_confirmation)
+		upsertUser(doc)
+		)
+	socket.on('destroy', (doc) ->
+		Users.destroy(doc._id, doc._rev, (err, body) ->
+			if err
+				inspect(err)
+			if body
+				log("Destroyed #{doc._id}")
+			)
 		)
 	)
 users_feed = Users.follow({since: "now", include_docs: true})

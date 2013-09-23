@@ -14,7 +14,8 @@
     "cli-color": "*",
     "connect-flash": "*",
     "MD5": "*",
-    "socket.io": "*"
+    "socket.io": "*",
+    "txn": "*"
   },
   "devDependencies": {
     "grunt": "~0.4.1",

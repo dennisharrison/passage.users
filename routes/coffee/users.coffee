@@ -7,6 +7,7 @@ collection	= _couch.use('_users')
 
 users = {}
 users.order = {}
+users.json = {}
 users.index = {}
 users.show = {}
 users.edit = {}
@@ -15,6 +16,16 @@ users.destroy = {}
 
 users.order = (req, res) ->
 	collection.view('users', 'users_by_name-id', (err, body) ->
+		if err
+			inspect(err)
+			return
+		if body
+			inspect(body)
+			res.send(body)
+		)
+
+users.json = (req, res) ->
+	collection.view('users', 'users_by_name', (err, body) ->
 		if err
 			inspect(err)
 			return

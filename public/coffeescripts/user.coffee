@@ -13,7 +13,12 @@ egs.Info =
 	password_confirmation: {type:'input_password', validation:['required']}
 	#roles: 'roles_editor'
 
-egs.Controls =
+egs.FormControls =
 	destroy: {type:'button', action:'destroy_with_confirm', glyphicon:'remove', classes:'btn-danger'}
 	cancel: {type:'button', action:'cancel', glyphicon:'ban-circle', classes:'btn-warning'}
 	save: {type:'button', action:'save', glyphicon:'ok', classes:'btn-success'}
+
+egs.ListControls =
+	edit: {type:'button', action:'edit', glyphicon:'pencil', classes:'btn-info'}
+	destroy: {type:'button', action:'destroy_with_confirm', glyphicon:'remove', classes:'btn-danger'}
+	
