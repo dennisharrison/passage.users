@@ -33,10 +33,8 @@ var reactivity = function(passage){
         _doc_ui.remove();
         return;
       }
-      var rev = _doc_ui.find('.rev');  
+      var rev = _doc_ui.attr('_rev');  
       if(rev != _doc._rev){
-        var rev = _doc._rev.split('-')[0];
-        _doc.rev = rev;
         var options = {
           doc: _doc
         }
@@ -53,8 +51,6 @@ var reactivity = function(passage){
           var i = 0
           _.each(data.rows, function(row){
             if(row.id == _doc._id){
-              var rev = _doc._rev.split('-')[0];
-              _doc.rev = rev;
               var previous_element = $("[_id='" + data.rows[i-1].id + "']");
               var options = {
                 doc: _doc

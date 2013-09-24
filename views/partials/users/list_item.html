@@ -1,6 +1,7 @@
 <li {{passage_bind}} class='{{passage.name}}_listing list-group-item row'>
+
 	
-	<div class="name col-md-8"><span class="badge badge-info">{{doc.rev}}</span> {{doc.name}}</div>
+	<div class="name col-md-8"><span class="badge badge-info">{{{chopAtFirst doc._rev "-"}}}</span> {{doc.name}}</div>
 
 	<div class="element_group ListControls">
 	{{#each passage.elementGroups.ListControls}}
