@@ -234,6 +234,7 @@ app.post('/login', passport.authenticate('local', {
 app.get('/users', exposePartials, routes.users.index)
 app.get('/users.order', routes.users.order)
 app.get('/users.json', routes.users.json)
+app.get('/users.edit', routes.users.edit)
 
 module.exports = app
 

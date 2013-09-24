@@ -1,22 +1,26 @@
 
 <div class='col-md-4 col-md-offset-4 well'>
   <h1>{{users.total_rows}} Users Available</h1>
-  <ul id="UsersList" class='list-group'>
-    <li class="list-group-item row">
+  <div class="list_wrapper">
+    
+    <div class="list-group-item row">
       <span>Add a new User</span>
       <div class='pull-right'>
       <button id='newUserButton' class='pointer btn btn-mini btn-success control-button'>
         <i class='glyphicon glyphicon-plus'></i>
       </button>
       </div>
-    </li>
-    
-  </ul>
+    </div>
+
+    <ul id="UsersList" class='list-group' list_for="users">
+    </ul>
+  
+  </div>
 </div>
 
 <script type='text/javascript'>  
   var users_socket = reactivity(users_passage);
-  initializeList(users_passage, $("#UsersList"));
+  initializeList(users_passage);
 
   $(document).ready(function(){
     //$("body").append(returnElements(user_form_description));

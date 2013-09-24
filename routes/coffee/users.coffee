@@ -20,7 +20,6 @@ users.order = (req, res) ->
 			inspect(err)
 			return
 		if body
-			inspect(body)
 			res.send(body)
 		)
 
@@ -30,7 +29,6 @@ users.json = (req, res) ->
 			inspect(err)
 			return
 		if body
-			inspect(body)
 			res.send(body)
 		)
 
@@ -40,9 +38,18 @@ users.index = (req, res) ->
 			inspect(err)
 			return
 		if body
-			# inspect(body)
 			res.render('user_index', { 'users': body })
 		)
+
+users.edit = (req, res) ->
+	req.query._id = decodeURIComponent(req.query._id)
+	collection.get(req.query._id, (err, body) ->
+		if err
+			inspect(err)
+			return
+		if body
+			res.send(body)
+		)	
 	
 users.show = (req, res) ->
 	console.log(req)

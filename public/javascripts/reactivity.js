@@ -27,7 +27,7 @@ var reactivity = function(passage){
 
   var change_callback = function (change) {
     var _doc = change.doc
-    var _doc_ui = $("[_id='" + _doc._id + "']");
+    var _doc_ui = $("[_id='" + encodeURIComponent(_doc._id) + "']");
     if(_doc_ui.length >= 1){
       if(change.deleted === true) {
         _doc_ui.remove();
@@ -50,13 +50,17 @@ var reactivity = function(passage){
           rows = data;
           var i = 0
           _.each(data.rows, function(row){
-            if(row.id == _doc._id){
-              var previous_element = $("[_id='" + data.rows[i-1].id + "']");
-              var options = {
+            var options = {
                 doc: _doc
               }
-              var template = returnListItem(passage, options);
-              previous_element.after(template);
+            var template = returnListItem(passage, options);
+            if(row.id == _doc._id){
+              if(typeof data.rows[i-1] == 'undefined') {
+                $("[list_for='" + passage.name + "']").prepend(template);
+              } else {
+                var previous_element = $("[_id='" + data.rows[i-1].id + "']");
+                previous_element.after(template);
+              }
             }
             i ++  
           })
@@ -69,7 +73,7 @@ var reactivity = function(passage){
   return socket
 }
 
-var initializeList = function (passage, ui) {
+var initializeList = function (passage) {
   var collection = passage.name.toLowerCase(),
       rows,
       doc,
@@ -84,6 +88,8 @@ var initializeList = function (passage, ui) {
       list_order_uri,
       list_json_uri
 
+
+  ui = $("[list_for='" + passage.name + "']");
   socket_uri = "/" + collection;
   socket_event = "" + collection + "_change";
   list_order_uri = "" + socket_uri + ".order";
