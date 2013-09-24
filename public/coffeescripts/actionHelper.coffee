@@ -1,8 +1,9 @@
 @actionSaveHelper = (ui) ->
 	ui = $(ui)
-	passage_name = ui.attr('passage')
-	passage = window["#{passage_name}_passage"]
 	form = ui.closest('form')
+	passage_name = form.attr('passage')
+	passage = window["#{passage_name}_passage"]
+	
 	_id = form.attr('_id')
 
 	unindexed_data = form.serializeArray()
@@ -20,13 +21,12 @@
 
 @actionDestroyHelper = (ui) ->
 	ui = $(ui)
-	passage_name = ui.attr('passage')
-	passage = window["#{passage_name}_passage"]
-	
 	listing = ui.closest("[passage_listing_root='true']")
+	passage_name = listing.attr('passage')
+	passage = window["#{passage_name}_passage"]
 
 	data = {}
-	data._rev = listing.attr('id')
+	data._rev = listing.attr('_rev')
 	data._id = listing.attr('_id')
 
 	socket = window["#{passage_name}_socket"]

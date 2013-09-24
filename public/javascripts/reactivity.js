@@ -40,7 +40,7 @@ var reactivity = function(passage){
         var options = {
           doc: _doc
         }
-        var template = returnListItemElements(passage, options);
+        var template = returnListItem(passage, options);
         _doc_ui.replaceWith(template);
       }
     } else {
@@ -59,7 +59,7 @@ var reactivity = function(passage){
               var options = {
                 doc: _doc
               }
-              var template = returnListItemElements(passage, options);
+              var template = returnListItem(passage, options);
               previous_element.after(template);
             }
             i ++  
@@ -103,8 +103,9 @@ var initializeList = function (passage, ui) {
         var options = {
           doc: _doc.value
         }
-        var html = returnListItemElements(passage, options);
-        ui.append(html);
+        //var html = returnListItemElements(passage, options);
+        var template = returnListItem(passage, options);
+        ui.append(template);
       });
     }
   });

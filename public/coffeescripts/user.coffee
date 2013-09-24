@@ -4,6 +4,7 @@ passage.name = "users"
 passage.form_name = "UserForm"
 passage.classes = "user_form"
 passage.show = 'users/show'
+passage.list_partial = 'users/list_item'
 passage.elementGroups = {}
 egs = passage.elementGroups
 egs.Info =

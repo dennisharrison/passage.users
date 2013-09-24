@@ -6,7 +6,7 @@
 		doc = options.doc
 		name = doc._id
 
-	rendered = "<form _id='#{name}' class='passage_form #{classes}' role='form'>"
+	rendered = "<form _id='#{name}' class='passage_form #{classes}' passage='#{passage.name}' role='form'>"
 
 	for name of passage.elementGroups
 		group = passage.elementGroups[name]
@@ -59,44 +59,30 @@
 
 	return rendered
 
-@returnListItemElements = (passage, options) ->
+
+@returnListItem = (passage, options) ->
 	if options?.doc
 		doc = options.doc
 	else
 		return
 
-	rendered = "<li id='#{doc._rev}' _id='#{doc._id}' class='#{passage.name}_listing list-group-item row' passage_listing_root='true'>"
-	rendered += Handlebars.partials["#{passage.show}"](doc)
+	context = {}
+	context.passage = passage
+	context.doc = options.doc
+	context.passage_bind = "_rev=#{doc._rev} _id=#{doc._id} passage=#{passage.name} passage_listing_root=true"
 
-	for name of passage.elementGroups
-		if name is "Info"
-			continue
-		if name is "FormControls"
-			continue
-		group = passage.elementGroups[name]
-		rendered += "<div class='element_group #{name}'>"
-		for field of group
-			element = group[field]
-			context = {}
-			context.name = field
-
-			if element.action? and typeof element.action is 'string'
-				context.action = element.action
-				context.passage_name = passage.name
-			if not element.action? or (element.action? and element.action is true)
-				context.action = field
-				context.passage_name = passage.name
-			if element.action? and element.action is false
-				delete context.action
-			if element.classes? and typeof element.classes is 'string'
-				context.classes = element.classes
-			if element.glyphicon? and typeof element.glyphicon is 'string'
-				context.glyphicon = element.glyphicon
-
-			if doc and typeof doc[field] isnt 'undefined'
-				context.value = doc[field]
-			partial = Handlebars.partials["elements/#{element.type}"](context)
-			rendered += partial
-		rendered += "</div>"
-	rendered += "</li>"
+	rendered = Handlebars.partials["#{passage.list_partial}"](context)
 	return rendered
+
+
+
+
+
+
+
+
+
+
+
+
+#EOF
