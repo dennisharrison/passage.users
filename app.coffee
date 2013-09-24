@@ -268,6 +268,3 @@ users_feed.on('change', (change) ->
 	)
 users_feed.follow()
 
-# http.createServer(app).listen(app.get('port'), () ->
-#   console.log('Express server listening via Grunt on port ' + app.get('port'))
-# )
